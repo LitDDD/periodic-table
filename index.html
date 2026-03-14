@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>流体元素周期表 - Fixed Edition</title>
+    <title>流体元素周期表 1.0.0.002</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
@@ -18,9 +18,21 @@
             background-color: var(--bg-dark);
             font-family: 'JetBrains Mono', monospace;
             color: white;
-            overflow: hidden;
+            overflow: hidden; /* 保持body无滚动条 */
             perspective: 1000px;
         }
+
+        /* ========== 新增：全局隐藏滚动条 ========== */
+        * {
+            scrollbar-width: none; /* 火狐浏览器隐藏滚动条 */
+        }
+        /* Webkit内核浏览器（Chrome/Safari/Edge）隐藏滚动条 */
+        *::-webkit-scrollbar {
+            display: none !important; /* 强制隐藏滚动条 */
+            width: 0 !important;
+            height: 0 !important;
+        }
+        /* ========== 滚动条隐藏结束 ========== */
 
         /* 恢复原版好看的3D气态背景 */
         .gas-cloud {
@@ -38,28 +50,28 @@
         .gas-cloud:nth-child(1) {
             width: 700px;
             height: 700px;
-            background: rgba(66, 153, 225, 0.6);
+            background: rgba(33, 148, 242, 0.838);
             top: -10%;
             left: -10%;
         }
         .gas-cloud:nth-child(2) {
             width: 800px;
             height: 800px;
-            background: rgba(159, 122, 234, 0.6);
+            background: rgba(148, 95, 255, 0.833);
             bottom: -20%;
             right: -10%;
         }
         .gas-cloud:nth-child(3) {
             width: 600px;
             height: 600px;
-            background: rgba(52, 211, 153, 0.6);
+            background: rgba(20, 230, 52, 0.815);
             top: 30%;
             left: 40%;
         }
         .gas-cloud:nth-child(4) {
             width: 500px;
             height: 500px;
-            background: rgba(248, 113, 113, 0.6);
+            background: rgba(236, 44, 44, 0.724);
             bottom: 20%;
             left: 20%;
         }
@@ -135,7 +147,7 @@
         }
 
         /* 元素分类颜色 */
-        .noble-gas { border-left: 4px solid #f87171; box-shadow: inset 5px 0 15px -10px #f87171; }
+        .noble-gas { border-left: 4px solid #ff5a5a; box-shadow: inset 5px 0 15px -10px #ff5a5a; }
         .alkali { border-left: 4px solid #fbbf24; box-shadow: inset 5px 0 15px -10px #fbbf24; }
         .alkaline-earth { border-left: 4px solid #facc15; box-shadow: inset 5px 0 15px -10px #facc15; }
         .transition-metal { border-left: 4px solid #eab308; box-shadow: inset 5px 0 15px -10px #eab308; }
@@ -337,7 +349,7 @@
     </transition>
 
     <div class="fixed bottom-6 left-8 text-[10px] tracking-widest opacity-30 rotate-90 origin-left">
-        2026 QUANTUM INTERFACE - Fixed Edition
+        2026 LitDDD
     </div>
 </div>
 
@@ -535,22 +547,5 @@
         }
     }).mount('#app');
 </script>
-
-<style>
-    /* 滚动条美化 */
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.2);
-        border-radius: 3px;
-    }
-    ::-webkit-scrollbar-track {
-        background: rgba(0,0,0,0.1);
-        border-radius: 3px;
-    }
-</style>
-
 </body>
 </html>
