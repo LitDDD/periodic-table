@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流体元素周期表 - Fixed Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&display=swap');
+
+        :root {
+            --bg-dark: #0a0a0c;
+            --tooltip-offset: 15px;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            font-family: 'JetBrains Mono', monospace;
+            color: white;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* 恢复原版好看的3D气态背景 */
+        .gas-cloud {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: drift 20s infinite alternate ease-in-out;
+            transform-style: preserve-3d;
+            will-change: transform, opacity;
+        }
+
+        /* 恢复原版彩色气体云 */
+        .gas-cloud:nth-child(1) {
+            width: 700px;
+            height: 700px;
+            background: rgba(66, 153, 225, 0.6);
+            top: -10%;
+            left: -10%;
+        }
+        .gas-cloud:nth-child(2) {
+            width: 800px;
+            height: 800px;
+            background: rgba(159, 122, 234, 0.6);
+            bottom: -20%;
+            right: -10%;
+        }
+        .gas-cloud:nth-child(3) {
+            width: 600px;
+            height: 600px;
+            background: rgba(52, 211, 153, 0.6);
+            top: 30%;
+            left: 40%;
+        }
+        .gas-cloud:nth-child(4) {
+            width: 500px;
+            height: 500px;
+            background: rgba(248, 113, 113, 0.6);
+            bottom: 20%;
+            left: 20%;
+        }
+
+        @keyframes drift {
+            0% { 
+                transform: translate3d(0, 0, 0) scale(1) rotate(0deg); 
+                opacity: 0.4;
+            }
+            25% {
+                transform: translate3d(8vw, 5vh, 30px) scale(1.05) rotate(2deg);
+                opacity: 0.5;
+            }
+            75% {
+                transform: translate3d(15vw, 10vh, 40px) scale(1.1) rotate(-3deg);
+                opacity: 0.55;
+            }
+            100% { 
+                transform: translate3d(20vw, 15vh, 50px) scale(1.2) rotate(5deg); 
+                opacity: 0.6;
+            }
+        }
+
+        /* 恢复原版体积雾叠加层 */
+        .volume-fog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+            animation: fog-flow 25s infinite alternate ease-in-out;
+            background-size: 150% 150%;
+        }
+
+        @keyframes fog-flow {
+            0% { 
+                opacity: 0.7;
+                background-position: 0% 0%;
+            }
+            100% { 
+                opacity: 1;
+                background-position: 100% 100%;
+            }
+        }
+
+        /* 恢复元素卡片样式 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            transform: translateZ(0);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            transform: translateZ(10px) scale(1.02);
+            animation: card-pulse 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes card-pulse {
+            0% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.1); }
+            100% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.15); }
+        }
+
+        /* 元素分类颜色 */
+        .noble-gas { border-left: 4px solid #f87171; box-shadow: inset 5px 0 15px -10px #f87171; }
+        .alkali { border-left: 4px solid #fbbf24; box-shadow: inset 5px 0 15px -10px #fbbf24; }
+        .alkaline-earth { border-left: 4px solid #facc15; box-shadow: inset 5px 0 15px -10px #facc15; }
+        .transition-metal { border-left: 4px solid #eab308; box-shadow: inset 5px 0 15px -10px #eab308; }
+        .post-transition { border-left: 4px solid #84cc16; box-shadow: inset 5px 0 15px -10px #84cc16; }
+        .metalloid { border-left: 4px solid #34d399; box-shadow: inset 5px 0 15px -10px #34d399; }
+        .non-metal { border-left: 4px solid #22d3ee; box-shadow: inset 5px 0 15px -10px #22d3ee; }
+        .halogen { border-left: 4px solid #38bdf8; box-shadow: inset 5px 0 15px -10px #38bdf8; }
+        .lanthanide { border-left: 4px solid #6366f1; box-shadow: inset 5px 0 15px -10px #6366f1; }
+        .actinide { border-left: 4px solid #a855f7; box-shadow: inset 5px 0 15px -10px #a855f7; }
+        .unknown { border-left: 4px solid #94a3b8; box-shadow: inset 5px 0 15px -10px #94a3b8; }
+
+        /* 高亮效果 */
+        .element-highlight {
+            animation: highlight-pulse 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes highlight-pulse {
+            0% { 
+                border-color: rgba(255, 255, 255, 0.3);
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            }
+            100% { 
+                border-color: rgba(255, 255, 255, 0.6);
+                box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        /* 修复后的气态雾卡片 - 保留边界但弱化，兼顾显示和雾效 */
+        .element-tooltip {
+            max-width: 85vw;
+            width: 320px;
+            transform-origin: center;
+            pointer-events: none;
+            position: fixed;
+            z-index: 50;
+            /* 保留柔和边界，确保显示正常 */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            /* 雾效增强 */
+            box-shadow: 0 0 40px rgba(66, 153, 225, 0.15);
+            overflow: hidden;
+        }
+
+        /* 气态雾背景层 - 自然过渡无硬边界 */
+        .element-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(circle at center, 
+                rgba(66, 153, 225, 0.2) 0%, 
+                rgba(66, 153, 225, 0.1) 60%, 
+                transparent 100%);
+            z-index: -1;
+            border-radius: 20px;
+            filter: blur(12px);
+            opacity: 0;
+        }
+
+        /* 气态聚拢动画 - 修复版 */
+        @keyframes fog-gather {
+            0% { 
+                opacity: 0;
+                filter: blur(15px);
+                transform: scale(0.95) translateZ(-20px);
+            }
+            100% { 
+                opacity: 1;
+                filter: blur(0);
+                transform: scale(1) translateZ(0);
+            }
+        }
+
+        /* 气态散开动画 - 修复版 */
+        @keyframes fog-disperse {
+            0% { 
+                opacity: 1;
+                filter: blur(0);
+                transform: scale(1) translateZ(0);
+            }
+            100% { 
+                opacity: 0;
+                filter: blur(20px);
+                transform: scale(1.05) translateZ(-20px);
+            }
+        }
+
+        /* 确保动画正确触发 */
+        .fog-enter-active {
+            animation: fog-gather 0.6s ease-out forwards;
+        }
+        .fog-enter-active::before {
+            animation: fog-bg-in 0.6s ease-out forwards;
+        }
+        .fog-leave-active {
+            animation: fog-disperse 0.4s ease-in forwards;
+        }
+        .fog-leave-active::before {
+            animation: fog-bg-out 0.4s ease-in forwards;
+        }
+
+        /* 雾效背景动画 */
+        @keyframes fog-bg-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes fog-bg-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="relative min-h-screen w-full p-8 flex flex-col items-center justify-center">
+    
+    <!-- 恢复原版彩色气体云背景 -->
+    <div class="gas-cloud"></div>
+    <div class="gas-cloud"></div>
+    <div class="gas-cloud"></div>
+    <div class="gas-cloud"></div>
+    
+    <!-- 体积雾叠加层 -->
+    <div class="volume-fog"></div>
+
+    <header class="mb-8 text-center">
+        <h1 class="text-5xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
+            PERIODIC TABLE
+        </h1>
+        <p class="text-gray-400 mt-2 tracking-widest text-sm uppercase">Interactive Fluid Design</p>
+    </header>
+
+    <!-- 修复下方元素显示问题的主容器 -->
+    <div class="w-full max-w-7xl mx-auto mb-8">
+        <!-- 主周期表网格 - 确保加载正常 -->
+        <div class="grid grid-cols-18 gap-1.5 p-4 overflow-auto" 
+             style="display: grid; grid-template-columns: repeat(18, minmax(40px, 1fr)); max-height: calc(100vh - 200px);">
+            
+            <!-- 元素卡片 - 恢复原版样式 -->
+            <div v-for="(el, index) in elements" :key="index"
+                 :style="{ gridColumn: el.x, gridRow: el.y }"
+                 @mouseenter="showTooltip(el, $event)"
+                 @mouseleave="hideTooltip"
+                 :class="[
+                     'glass-card', 'relative', 'aspect-square', 'flex', 'flex-col', 'items-center', 
+                     'justify-center', 'cursor-crosshair', 'rounded-lg', 'group', el.category,
+                     hoveredElement?.symbol === el.symbol ? 'element-highlight' : ''
+                 ]">
+                
+                <span class="absolute top-1 left-1 text-[10px] opacity-40 z-10">{{ el.number }}</span>
+                <span class="text-xl font-bold group-hover:scale-110 transition-transform z-10">{{ el.symbol }}</span>
+                <span class="text-[8px] opacity-60 mt-1 uppercase z-10">{{ el.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修复后的悬浮卡片 -->
+    <transition 
+        name="fog"
+        appear
+    >
+        <div v-if="hoveredElement" 
+             :style="{ 
+                 top: tooltipY + 'px',
+                 left: tooltipX + 'px'
+             }"
+             class="element-tooltip">
+            <div class="relative z-10">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-6xl font-black italic tracking-tighter">{{ hoveredElement.symbol }}</h2>
+                    <span class="text-xl font-light text-gray-300">#{{ hoveredElement.number }}</span>
+                </div>
+                <hr class="border-white/10 mb-4">
+                <div class="space-y-3 text-gray-100">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase mb-1">中文名称</p>
+                        <p class="text-xl font-medium">{{ hoveredElement.zh }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase mb-1">原子质量</p>
+                        <p class="text-lg">{{ hoveredElement.mass }} <span class="text-xs text-gray-400">u</span></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase mb-1">电子排布</p>
+                        <p class="text-sm font-mono text-blue-200">{{ hoveredElement.config }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase mb-1">类别</p>
+                        <p class="text-sm capitalize">{{ hoveredElement.category.replace('-', ' ') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <div class="fixed bottom-6 left-8 text-[10px] tracking-widest opacity-30 rotate-90 origin-left">
+        2026 QUANTUM INTERFACE - Fixed Edition
+    </div>
+</div>
+
+<script>
+    const { createApp, ref } = Vue;
+
+    createApp({
+        setup() {
+            const hoveredElement = ref(null);
+            const tooltipX = ref(0);
+            const tooltipY = ref(0);
+
+            // 修复的位置计算函数
+            const showTooltip = (el, e) => {
+                hoveredElement.value = el;
+                
+                const cardWidth = 320;
+                const cardHeight = 240;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const offset = 15;
+
+                // 获取元素位置
+                const elementRect = e.target.getBoundingClientRect();
+                
+                // 水平位置
+                let x = elementRect.right + offset;
+                if (x + cardWidth > viewportWidth) {
+                    x = elementRect.left - cardWidth - offset;
+                }
+                x = Math.max(offset, Math.min(x, viewportWidth - cardWidth - offset));
+
+                // 垂直位置 - 修复下方显示
+                let y = elementRect.top + (elementRect.height - cardHeight) / 2;
+                if (y + cardHeight > viewportHeight) {
+                    y = elementRect.top - cardHeight - offset;
+                }
+                y = Math.max(offset, Math.min(y, viewportHeight - cardHeight - offset));
+
+                tooltipX.value = x;
+                tooltipY.value = y;
+            };
+
+            const hideTooltip = () => {
+                hoveredElement.value = null;
+            };
+
+            // 完整118种元素数据
+            const elements = ref([
+                // 周期1
+                { number: 1, symbol: 'H', name: 'Hydrogen', zh: '氢', mass: '1.008', x: 1, y: 1, config: '1s¹', category: 'non-metal' },
+                { number: 2, symbol: 'He', name: 'Helium', zh: '氦', mass: '4.0026', x: 18, y: 1, config: '1s²', category: 'noble-gas' },
+                
+                // 周期2
+                { number: 3, symbol: 'Li', name: 'Lithium', zh: '锂', mass: '6.94', x: 1, y: 2, config: '[He] 2s¹', category: 'alkali' },
+                { number: 4, symbol: 'Be', name: 'Beryllium', zh: '铍', mass: '9.0122', x: 2, y: 2, config: '[He] 2s²', category: 'alkaline-earth' },
+                { number: 5, symbol: 'B', name: 'Boron', zh: '硼', mass: '10.81', x: 13, y: 2, config: '[He] 2s² 2p¹', category: 'metalloid' },
+                { number: 6, symbol: 'C', name: 'Carbon', zh: '碳', mass: '12.011', x: 14, y: 2, config: '[He] 2s² 2p²', category: 'non-metal' },
+                { number: 7, symbol: 'N', name: 'Nitrogen', zh: '氮', mass: '14.007', x: 15, y: 2, config: '[He] 2s² 2p³', category: 'non-metal' },
+                { number: 8, symbol: 'O', name: 'Oxygen', zh: '氧', mass: '15.999', x: 16, y: 2, config: '[He] 2s² 2p⁴', category: 'non-metal' },
+                { number: 9, symbol: 'F', name: 'Fluorine', zh: '氟', mass: '18.998', x: 17, y: 2, config: '[He] 2s² 2p⁵', category: 'halogen' },
+                { number: 10, symbol: 'Ne', name: 'Neon', zh: '氖', mass: '20.180', x: 18, y: 2, config: '[He] 2s² 2p⁶', category: 'noble-gas' },
+                
+                // 周期3
+                { number: 11, symbol: 'Na', name: 'Sodium', zh: '钠', mass: '22.990', x: 1, y: 3, config: '[Ne] 3s¹', category: 'alkali' },
+                { number: 12, symbol: 'Mg', name: 'Magnesium', zh: '镁', mass: '24.305', x: 2, y: 3, config: '[Ne] 3s²', category: 'alkaline-earth' },
+                { number: 13, symbol: 'Al', name: 'Aluminum', zh: '铝', mass: '26.982', x: 13, y: 3, config: '[Ne] 3s² 3p¹', category: 'post-transition' },
+                { number: 14, symbol: 'Si', name: 'Silicon', zh: '硅', mass: '28.085', x: 14, y: 3, config: '[Ne] 3s² 3p²', category: 'metalloid' },
+                { number: 15, symbol: 'P', name: 'Phosphorus', zh: '磷', mass: '30.974', x: 15, y: 3, config: '[Ne] 3s² 3p³', category: 'non-metal' },
+                { number: 16, symbol: 'S', name: 'Sulfur', zh: '硫', mass: '32.065', x: 16, y: 3, config: '[Ne] 3s² 3p⁴', category: 'non-metal' },
+                { number: 17, symbol: 'Cl', name: 'Chlorine', zh: '氯', mass: '35.453', x: 17, y: 3, config: '[Ne] 3s² 3p⁵', category: 'halogen' },
+                { number: 18, symbol: 'Ar', name: 'Argon', zh: '氩', mass: '39.948', x: 18, y: 3, config: '[Ne] 3s² 3p⁶', category: 'noble-gas' },
+                
+                // 周期4
+                { number: 19, symbol: 'K', name: 'Potassium', zh: '钾', mass: '39.098', x: 1, y: 4, config: '[Ar] 4s¹', category: 'alkali' },
+                { number: 20, symbol: 'Ca', name: 'Calcium', zh: '钙', mass: '40.078', x: 2, y: 4, config: '[Ar] 4s²', category: 'alkaline-earth' },
+                { number: 21, symbol: 'Sc', name: 'Scandium', zh: '钪', mass: '44.956', x: 3, y: 4, config: '[Ar] 3d¹ 4s²', category: 'transition-metal' },
+                { number: 22, symbol: 'Ti', name: 'Titanium', zh: '钛', mass: '47.867', x: 4, y: 4, config: '[Ar] 3d² 4s²', category: 'transition-metal' },
+                { number: 23, symbol: 'V', name: 'Vanadium', zh: '钒', mass: '50.942', x: 5, y: 4, config: '[Ar] 3d³ 4s²', category: 'transition-metal' },
+                { number: 24, symbol: 'Cr', name: 'Chromium', zh: '铬', mass: '51.996', x: 6, y: 4, config: '[Ar] 3d⁵ 4s¹', category: 'transition-metal' },
+                { number: 25, symbol: 'Mn', name: 'Manganese', zh: '锰', mass: '54.938', x: 7, y: 4, config: '[Ar] 3d⁵ 4s²', category: 'transition-metal' },
+                { number: 26, symbol: 'Fe', name: 'Iron', zh: '铁', mass: '55.845', x: 8, y: 4, config: '[Ar] 3d⁶ 4s²', category: 'transition-metal' },
+                { number: 27, symbol: 'Co', name: 'Cobalt', zh: '钴', mass: '58.933', x: 9, y: 4, config: '[Ar] 3d⁷ 4s²', category: 'transition-metal' },
+                { number: 28, symbol: 'Ni', name: 'Nickel', zh: '镍', mass: '58.693', x: 10, y: 4, config: '[Ar] 3d⁸ 4s²', category: 'transition-metal' },
+                { number: 29, symbol: 'Cu', name: 'Copper', zh: '铜', mass: '63.546', x: 11, y: 4, config: '[Ar] 3d¹⁰ 4s¹', category: 'transition-metal' },
+                { number: 30, symbol: 'Zn', name: 'Zinc', zh: '锌', mass: '65.38', x: 12, y: 4, config: '[Ar] 3d¹⁰ 4s²', category: 'transition-metal' },
+                { number: 31, symbol: 'Ga', name: 'Gallium', zh: '镓', mass: '69.723', x: 13, y: 4, config: '[Ar] 3d¹⁰ 4s² 4p¹', category: 'post-transition' },
+                { number: 32, symbol: 'Ge', name: 'Germanium', zh: '锗', mass: '72.630', x: 14, y: 4, config: '[Ar] 3d¹⁰ 4s² 4p²', category: 'metalloid' },
+                { number: 33, symbol: 'As', name: 'Arsenic', zh: '砷', mass: '74.922', x: 15, y: 4, config: '[Ar] 3d¹⁰ 4s² 4p³', category: 'metalloid' },
+                { number: 34, symbol: 'Se', name: 'Selenium', zh: '硒', mass: '78.971', x: 16, y: 4, config: '[Ar] 3d¹⁰ 4s² 4p⁴', category: 'non-metal' },
+                { number: 35, symbol: 'Br', name: 'Bromine', zh: '溴', mass: '79.904', x: 17, y: 4, config: '[Ar] 3d¹⁰ 4s² 4p⁵', category: 'halogen' },
+                { number: 36, symbol: 'Kr', name: 'Krypton', zh: '氪', mass: '83.798', x: 18, y: 4, config: '[Ar] 3d¹⁰ 4s² 4p⁶', category: 'noble-gas' },
+                
+                // 周期5
+                { number: 37, symbol: 'Rb', name: 'Rubidium', zh: '铷', mass: '85.468', x: 1, y: 5, config: '[Kr] 5s¹', category: 'alkali' },
+                { number: 38, symbol: 'Sr', name: 'Strontium', zh: '锶', mass: '87.62', x: 2, y: 5, config: '[Kr] 5s²', category: 'alkaline-earth' },
+                { number: 39, symbol: 'Y', name: 'Yttrium', zh: '钇', mass: '88.906', x: 3, y: 5, config: '[Kr] 4d¹ 5s²', category: 'transition-metal' },
+                { number: 40, symbol: 'Zr', name: 'Zirconium', zh: '锆', mass: '91.224', x: 4, y: 5, config: '[Kr] 4d² 5s²', category: 'transition-metal' },
+                { number: 41, symbol: 'Nb', name: 'Niobium', zh: '铌', mass: '92.906', x: 5, y: 5, config: '[Kr] 4d⁴ 5s¹', category: 'transition-metal' },
+                { number: 42, symbol: 'Mo', name: 'Molybdenum', zh: '钼', mass: '95.95', x: 6, y: 5, config: '[Kr] 4d⁵ 5s¹', category: 'transition-metal' },
+                { number: 43, symbol: 'Tc', name: 'Technetium', zh: '锝', mass: '(98)', x: 7, y: 5, config: '[Kr] 4d⁵ 5s²', category: 'transition-metal' },
+                { number: 44, symbol: 'Ru', name: 'Ruthenium', zh: '钌', mass: '101.07', x: 8, y: 5, config: '[Kr] 4d⁷ 5s¹', category: 'transition-metal' },
+                { number: 45, symbol: 'Rh', name: 'Rhodium', zh: '铑', mass: '102.91', x: 9, y: 5, config: '[Kr] 4d⁸ 5s¹', category: 'transition-metal' },
+                { number: 46, symbol: 'Pd', name: 'Palladium', zh: '钯', mass: '106.42', x: 10, y: 5, config: '[Kr] 4d¹⁰', category: 'transition-metal' },
+                { number: 47, symbol: 'Ag', name: 'Silver', zh: '银', mass: '107.87', x: 11, y: 5, config: '[Kr] 4d¹⁰ 5s¹', category: 'transition-metal' },
+                { number: 48, symbol: 'Cd', name: 'Cadmium', zh: '镉', mass: '112.41', x: 12, y: 5, config: '[Kr] 4d¹⁰ 5s²', category: 'transition-metal' },
+                { number: 49, symbol: 'In', name: 'Indium', zh: '铟', mass: '114.82', x: 13, y: 5, config: '[Kr] 4d¹⁰ 5s² 5p¹', category: 'post-transition' },
+                { number: 50, symbol: 'Sn', name: 'Tin', zh: '锡', mass: '118.71', x: 14, y: 5, config: '[Kr] 4d¹⁰ 5s² 5p²', category: 'post-transition' },
+                { number: 51, symbol: 'Sb', name: 'Antimony', zh: '锑', mass: '121.76', x: 15, y: 5, config: '[Kr] 4d¹⁰ 5s² 5p³', category: 'metalloid' },
+                { number: 52, symbol: 'Te', name: 'Tellurium', zh: '碲', mass: '127.60', x: 16, y: 5, config: '[Kr] 4d¹⁰ 5s² 5p⁴', category: 'metalloid' },
+                { number: 53, symbol: 'I', name: 'Iodine', zh: '碘', mass: '126.90', x: 17, y: 5, config: '[Kr] 4d¹⁰ 5s² 5p⁵', category: 'halogen' },
+                { number: 54, symbol: 'Xe', name: 'Xenon', zh: '氙', mass: '131.29', x: 18, y: 5, config: '[Kr] 4d¹⁰ 5s² 5p⁶', category: 'noble-gas' },
+                
+                // 周期6
+                { number: 55, symbol: 'Cs', name: 'Cesium', zh: '铯', mass: '132.91', x: 1, y: 6, config: '[Xe] 6s¹', category: 'alkali' },
+                { number: 56, symbol: 'Ba', name: 'Barium', zh: '钡', mass: '137.33', x: 2, y: 6, config: '[Xe] 6s²', category: 'alkaline-earth' },
+                { number: 57, symbol: 'La', name: 'Lanthanum', zh: '镧', mass: '138.91', x: 3, y: 6, config: '[Xe] 5d¹ 6s²', category: 'lanthanide' },
+                { number: 72, symbol: 'Hf', name: 'Hafnium', zh: '铪', mass: '178.49', x: 4, y: 6, config: '[Xe] 4f¹⁴ 5d² 6s²', category: 'transition-metal' },
+                { number: 73, symbol: 'Ta', name: 'Tantalum', zh: '钽', mass: '180.95', x: 5, y: 6, config: '[Xe] 4f¹⁴ 5d³ 6s²', category: 'transition-metal' },
+                { number: 74, symbol: 'W', name: 'Tungsten', zh: '钨', mass: '183.84', x: 6, y: 6, config: '[Xe] 4f¹⁴ 5d⁴ 6s²', category: 'transition-metal' },
+                { number: 75, symbol: 'Re', name: 'Rhenium', zh: '铼', mass: '186.21', x: 7, y: 6, config: '[Xe] 4f¹⁴ 5d⁵ 6s²', category: 'transition-metal' },
+                { number: 76, symbol: 'Os', name: 'Osmium', zh: '锇', mass: '190.23', x: 8, y: 6, config: '[Xe] 4f¹⁴ 5d⁶ 6s²', category: 'transition-metal' },
+                { number: 77, symbol: 'Ir', name: 'Iridium', zh: '铱', mass: '192.22', x: 9, y: 6, config: '[Xe] 4f¹⁴ 5d⁷ 6s²', category: 'transition-metal' },
+                { number: 78, symbol: 'Pt', name: 'Platinum', zh: '铂', mass: '195.08', x: 10, y: 6, config: '[Xe] 4f¹⁴ 5d⁹ 6s¹', category: 'transition-metal' },
+                { number: 79, symbol: 'Au', name: 'Gold', zh: '金', mass: '196.97', x: 11, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s¹', category: 'transition-metal' },
+                { number: 80, symbol: 'Hg', name: 'Mercury', zh: '汞', mass: '200.59', x: 12, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s²', category: 'transition-metal' },
+                { number: 81, symbol: 'Tl', name: 'Thallium', zh: '铊', mass: '204.38', x: 13, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹', category: 'post-transition' },
+                { number: 82, symbol: 'Pb', name: 'Lead', zh: '铅', mass: '207.2', x: 14, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²', category: 'post-transition' },
+                { number: 83, symbol: 'Bi', name: 'Bismuth', zh: '铋', mass: '208.98', x: 15, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³', category: 'post-transition' },
+                { number: 84, symbol: 'Po', name: 'Polonium', zh: '钋', mass: '(209)', x: 16, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴', category: 'post-transition' },
+                { number: 85, symbol: 'At', name: 'Astatine', zh: '砹', mass: '(210)', x: 17, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵', category: 'halogen' },
+                { number: 86, symbol: 'Rn', name: 'Radon', zh: '氡', mass: '(222)', x: 18, y: 6, config: '[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶', category: 'noble-gas' },
+                
+                // 周期7
+                { number: 87, symbol: 'Fr', name: 'Francium', zh: '钫', mass: '(223)', x: 1, y: 7, config: '[Rn] 7s¹', category: 'alkali' },
+                { number: 88, symbol: 'Ra', name: 'Radium', zh: '镭', mass: '(226)', x: 2, y: 7, config: '[Rn] 7s²', category: 'alkaline-earth' },
+                { number: 89, symbol: 'Ac', name: 'Actinium', zh: '锕', mass: '(227)', x: 3, y: 7, config: '[Rn] 6d¹ 7s²', category: 'actinide' },
+                { number: 104, symbol: 'Rf', name: 'Rutherfordium', zh: '𬬻', mass: '(267)', x: 4, y: 7, config: '[Rn] 5f¹⁴ 6d² 7s²', category: 'transition-metal' },
+                { number: 105, symbol: 'Db', name: 'Dubnium', zh: '𬭊', mass: '(268)', x: 5, y: 7, config: '[Rn] 5f¹⁴ 6d³ 7s²', category: 'transition-metal' },
+                { number: 106, symbol: 'Sg', name: 'Seaborgium', zh: '𬭳', mass: '(269)', x: 6, y: 7, config: '[Rn] 5f¹⁴ 6d⁴ 7s²', category: 'transition-metal' },
+                { number: 107, symbol: 'Bh', name: 'Bohrium', zh: '𬭛', mass: '(270)', x: 7, y: 7, config: '[Rn] 5f¹⁴ 6d⁵ 7s²', category: 'transition-metal' },
+                { number: 108, symbol: 'Hs', name: 'Hassium', zh: '𬭶', mass: '(277)', x: 8, y: 7, config: '[Rn] 5f¹⁴ 6d⁶ 7s²', category: 'transition-metal' },
+                { number: 109, symbol: 'Mt', name: 'Meitnerium', zh: '鿏', mass: '(278)', x: 9, y: 7, config: '[Rn] 5f¹⁴ 6d⁷ 7s²', category: 'transition-metal' },
+                { number: 110, symbol: 'Ds', name: 'Darmstadtium', zh: '𫟼', mass: '(281)', x: 10, y: 7, config: '[Rn] 5f¹⁴ 6d⁸ 7s²', category: 'transition-metal' },
+                { number: 111, symbol: 'Rg', name: 'Roentgenium', zh: '𬬭', mass: '(282)', x: 11, y: 7, config: '[Rn] 5f¹⁴ 6d⁹ 7s²', category: 'transition-metal' },
+                { number: 112, symbol: 'Cn', name: 'Copernicium', zh: '鿔', mass: '(285)', x: 12, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s²', category: 'transition-metal' },
+                { number: 113, symbol: 'Nh', name: 'Nihonium', zh: '鿭', mass: '(286)', x: 13, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹', category: 'post-transition' },
+                { number: 114, symbol: 'Fl', name: 'Flerovium', zh: '𫓧', mass: '(289)', x: 14, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²', category: 'post-transition' },
+                { number: 115, symbol: 'Mc', name: 'Moscovium', zh: '镆', mass: '(290)', x: 15, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³', category: 'post-transition' },
+                { number: 116, symbol: 'Lv', name: 'Livermorium', zh: '𫟷', mass: '(293)', x: 16, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴', category: 'post-transition' },
+                { number: 117, symbol: 'Ts', name: 'Tennessine', zh: '鿬', mass: '(294)', x: 17, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵', category: 'halogen' },
+                { number: 118, symbol: 'Og', name: 'Oganesson', zh: '鿫', mass: '(294)', x: 18, y: 7, config: '[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶', category: 'noble-gas' },
+                
+                // 镧系（周期8，单独行）
+                { number: 58, symbol: 'Ce', name: 'Cerium', zh: '铈', mass: '140.12', x: 4, y: 8, config: '[Xe] 4f¹ 5d¹ 6s²', category: 'lanthanide' },
+                { number: 59, symbol: 'Pr', name: 'Praseodymium', zh: '镨', mass: '140.91', x: 5, y: 8, config: '[Xe] 4f³ 6s²', category: 'lanthanide' },
+                { number: 60, symbol: 'Nd', name: 'Neodymium', zh: '钕', mass: '144.24', x: 6, y: 8, config: '[Xe] 4f⁴ 6s²', category: 'lanthanide' },
+                { number: 61, symbol: 'Pm', name: 'Promethium', zh: '钷', mass: '(145)', x: 7, y: 8, config: '[Xe] 4f⁵ 6s²', category: 'lanthanide' },
+                { number: 62, symbol: 'Sm', name: 'Samarium', zh: '钐', mass: '150.36', x: 8, y: 8, config: '[Xe] 4f⁶ 6s²', category: 'lanthanide' },
+                { number: 63, symbol: 'Eu', name: 'Europium', zh: '铕', mass: '151.96', x: 9, y: 8, config: '[Xe] 4f⁷ 6s²', category: 'lanthanide' },
+                { number: 64, symbol: 'Gd', name: 'Gadolinium', zh: '钆', mass: '157.25', x: 10, y: 8, config: '[Xe] 4f⁷ 5d¹ 6s²', category: 'lanthanide' },
+                { number: 65, symbol: 'Tb', name: 'Terbium', zh: '铽', mass: '158.93', x: 11, y: 8, config: '[Xe] 4f⁹ 6s²', category: 'lanthanide' },
+                { number: 66, symbol: 'Dy', name: 'Dysprosium', zh: '镝', mass: '162.50', x: 12, y: 8, config: '[Xe] 4f¹⁰ 6s²', category: 'lanthanide' },
+                { number: 67, symbol: 'Ho', name: 'Holmium', zh: '钬', mass: '164.93', x: 13, y: 8, config: '[Xe] 4f¹¹ 6s²', category: 'lanthanide' },
+                { number: 68, symbol: 'Er', name: 'Erbium', zh: '铒', mass: '167.26', x: 14, y: 8, config: '[Xe] 4f¹² 6s²', category: 'lanthanide' },
+                { number: 69, symbol: 'Tm', name: 'Thulium', zh: '铥', mass: '168.93', x: 15, y: 8, config: '[Xe] 4f¹³ 6s²', category: 'lanthanide' },
+                { number: 70, symbol: 'Yb', name: 'Ytterbium', zh: '镱', mass: '173.05', x: 16, y: 8, config: '[Xe] 4f¹⁴ 6s²', category: 'lanthanide' },
+                { number: 71, symbol: 'Lu', name: 'Lutetium', zh: '镥', mass: '174.97', x: 17, y: 8, config: '[Xe] 4f¹⁴ 5d¹ 6s²', category: 'lanthanide' },
+                
+                // 锕系（周期9，单独行）
+                { number: 90, symbol: 'Th', name: 'Thorium', zh: '钍', mass: '232.04', x: 4, y: 9, config: '[Rn] 6d² 7s²', category: 'actinide' },
+                { number: 91, symbol: 'Pa', name: 'Protactinium', zh: '镤', mass: '231.04', x: 5, y: 9, config: '[Rn] 5f² 6d¹ 7s²', category: 'actinide' },
+                { number: 92, symbol: 'U', name: 'Uranium', zh: '铀', mass: '238.03', x: 6, y: 9, config: '[Rn] 5f³ 6d¹ 7s²', category: 'actinide' },
+                { number: 93, symbol: 'Np', name: 'Neptunium', zh: '镎', mass: '(237)', x: 7, y: 9, config: '[Rn] 5f⁴ 6d¹ 7s²', category: 'actinide' },
+                { number: 94, symbol: 'Pu', name: 'Plutonium', zh: '钚', mass: '(244)', x: 8, y: 9, config: '[Rn] 5f⁶ 7s²', category: 'actinide' },
+                { number: 95, symbol: 'Am', name: 'Americium', zh: '镅', mass: '(243)', x: 9, y: 9, config: '[Rn] 5f⁷ 7s²', category: 'actinide' },
+                { number: 96, symbol: 'Cm', name: 'Curium', zh: '锔', mass: '(247)', x: 10, y: 9, config: '[Rn] 5f⁷ 6d¹ 7s²', category: 'actinide' },
+                { number: 97, symbol: 'Bk', name: 'Berkelium', zh: '锫', mass: '(247)', x: 11, y: 9, config: '[Rn] 5f⁹ 7s²', category: 'actinide' },
+                { number: 98, symbol: 'Cf', name: 'Californium', zh: '锎', mass: '(251)', x: 12, y: 9, config: '[Rn] 5f¹⁰ 7s²', category: 'actinide' },
+                { number: 99, symbol: 'Es', name: 'Einsteinium', zh: '锿', mass: '(252)', x: 13, y: 9, config: '[Rn] 5f¹¹ 7s²', category: 'actinide' },
+                { number: 100, symbol: 'Fm', name: 'Fermium', zh: '镄', mass: '(257)', x: 14, y: 9, config: '[Rn] 5f¹² 7s²', category: 'actinide' },
+                { number: 101, symbol: 'Md', name: 'Mendelevium', zh: '钔', mass: '(258)', x: 15, y: 9, config: '[Rn] 5f¹³ 7s²', category: 'actinide' },
+                { number: 102, symbol: 'No', name: 'Nobelium', zh: '锘', mass: '(259)', x: 16, y: 9, config: '[Rn] 5f¹⁴ 7s²', category: 'actinide' },
+                { number: 103, symbol: 'Lr', name: 'Lawrencium', zh: '铹', mass: '(266)', x: 17, y: 9, config: '[Rn] 5f¹⁴ 7s² 7p¹', category: 'actinide' }
+            ]);
+
+            return { 
+                elements, 
+                hoveredElement, 
+                tooltipX, 
+                tooltipY,
+                showTooltip,
+                hideTooltip
+            };
+        }
+    }).mount('#app');
+</script>
+
+<style>
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
+        border-radius: 3px;
+    }
+</style>
+
+</body>
+</html>
